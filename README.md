@@ -75,6 +75,29 @@ gcc -O2 -o examples/reader examples/reader.c
 - `tools/ctrl.py`: set/clear CTRL bits.
 - `tools/read_tick.py`: shows `TICK_US` increasing.
 
+## Streaming over ADALM-Pluto (GNU Radio)
+The repository now includes a GNU Radio-based flowgraph that samples the sensor
+registers, converts them into MAVLink v2 telemetry and transmits them with a
+GMSK waveform through an ADALM-Pluto SDR.
+
+1. Start the simulator (SHM backend works well in a container):
+   ```bash
+   python3 sim/sim_writer.py --backend shm
+   ```
+2. In a second shell launch the transmitter, pointing it at the shared memory
+   backend and configuring the desired RF parameters:
+   ```bash
+   python3 scripts/gr_pluto_mavlink.py \
+       --backend shm \
+       --samp-rate 1e6 \
+       --tx-freq 915e6 \
+       --tx-bw 200e3 \
+       --tx-gain -10
+   ```
+
+The script can also run against `/dev/uio0` on hardware by switching the backend
+to `uio` (default) and, if needed, overriding `--uio`.
+
 ## Notes
 - If `insmod` fails in Codespaces/containers, use `--backend shm`.
 - The reader and tools accept `--backend uio|shm`. For UIO you can pass the node path with `--uio` (default `/dev/uio0`). For SHM, the file is `/dev/shm/sim_sensor.bin`.
