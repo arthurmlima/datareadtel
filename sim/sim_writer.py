@@ -1,6 +1,11 @@
 
 #!/usr/bin/env python3
-import argparse, mmap, os, struct, time, math, random
+import argparse, mmap, os, struct, time, math, random, sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 from common.registers import *
 from sim.scenarios import loiter_brasilia, eddf_approach
 
