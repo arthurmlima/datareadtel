@@ -1,6 +1,12 @@
 
 #!/usr/bin/env python3
 import argparse, mmap, os, struct, time, math, random
+import sys
+from pathlib import Path
+
+# Ensure repository root is on PYTHONPATH when running as a script.
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 from common.registers import *
 from sim.scenarios import loiter_brasilia, eddf_approach
 
