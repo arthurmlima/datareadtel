@@ -2,6 +2,7 @@
 // uio_sim_sensor.c - RAM-backed UIO device exposing a 4KB register block
 #include <linux/module.h>
 #include <linux/uio_driver.h>
+#include <linux/platform_device.h>
 #include <linux/slab.h>
 #include <linux/types.h>
 
@@ -9,6 +10,7 @@
 #define MMIO_SIZE 4096
 
 static struct uio_info sim_uio;
+static struct platform_device *sim_pdev;
 static void *mmio;
 
 static irqreturn_t sim_handler(int irq, struct uio_info *info) {
@@ -24,6 +26,13 @@ static int __init sim_init(void) {
     *(u32 *)(mmio + 0x004) = 0x00010000; // VERSION
     *(u32 *)(mmio + 0x008) = 0x1;        // STATUS OK
 
+    sim_pdev = platform_device_register_simple(DRV_NAME, -1, NULL, 0);
+    if (IS_ERR(sim_pdev)) {
+        kfree(mmio);
+        pr_err(DRV_NAME ": failed to register platform device\n");
+        return PTR_ERR(sim_pdev);
+    }
+
     sim_uio.name = DRV_NAME;
     sim_uio.version = "1.0";
     sim_uio.irq = UIO_IRQ_NONE;
@@ -33,8 +42,9 @@ static int __init sim_init(void) {
     sim_uio.mem[0].size = MMIO_SIZE;
     sim_uio.mem[0].memtype = UIO_MEM_LOGICAL;
 
-    if (uio_register_device(NULL, &sim_uio)) {
+    if (uio_register_device(&sim_pdev->dev, &sim_uio)) {
         kfree(mmio);
+        platform_device_unregister(sim_pdev);
         pr_err(DRV_NAME ": register failed\n");
         return -ENODEV;
     }
@@ -45,6 +55,7 @@ static int __init sim_init(void) {
 
 static void __exit sim_exit(void) {
     uio_unregister_device(&sim_uio);
+    platform_device_unregister(sim_pdev);
     kfree(mmio);
     pr_info(DRV_NAME ": unloaded\n");
 }
