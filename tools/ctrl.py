@@ -1,6 +1,11 @@
 
 #!/usr/bin/env python3
-import argparse, mmap, os, struct
+import argparse, mmap, os, struct, sys
+from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.append(str(Path(__file__).resolve().parents[1]))
+
 from common.registers import *
 
 def main():
